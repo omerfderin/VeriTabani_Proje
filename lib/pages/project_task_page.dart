@@ -385,7 +385,6 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
       );
 
       if (response.statusCode == 200) {
-        // Silme işlemi başarılı olduktan sonra tabloyu güncelle
         await _fetchTasks();
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -453,10 +452,7 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
   String _formatDate(String date) {
     try {
       if (date.isEmpty) return 'Belirtilmemiş';
-
-      // UTC'den yerel saat dilimine çevirme
       DateTime parsedDate = DateTime.parse(date).toLocal();
-      // Saat bilgisini sıfırlayarak sadece tarih bilgisini al
       parsedDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
 
       return "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month.toString().padLeft(2, '0')}.${parsedDate.year}";
@@ -610,7 +606,6 @@ class _ProjectTasksPageState extends State<ProjectTasksPage> {
                           },
                         );
                         if (date != null) {
-                          // Sadece tarih bilgisini al, saat bilgisini sıfırla
                           final selectedDate =
                               DateTime(date.year, date.month, date.day);
                           _endDateController.text =
