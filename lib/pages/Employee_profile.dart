@@ -204,10 +204,7 @@ class EmployeeProfilePageState extends State<EmployeeProfilePage> {
   String _formatDate(String date) {
     try {
       if (date.isEmpty) return 'Belirtilmemiş';
-
-      // UTC'den yerel saat dilimine çevirme
       DateTime parsedDate = DateTime.parse(date).toLocal();
-      // Saat bilgisini sıfırlayarak sadece tarih bilgisini al
       parsedDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
 
       return "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month.toString().padLeft(2, '0')}.${parsedDate.year}";
