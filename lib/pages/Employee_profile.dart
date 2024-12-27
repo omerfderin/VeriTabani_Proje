@@ -51,30 +51,106 @@ class EmployeeProfilePageState extends State<EmployeeProfilePage> {
 
   Widget _buildTaskList() {
     final now = DateTime.now();
-    final completedTasks = _employeeTasks.where((task) => task['gDurum'] == 'Tamamlandı').toList();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final completedTasks = _employeeTasks.where((task) =>
+    task['gDurum'] == 'Tamamlandı'
+    ).toList();
+
     final ongoingTasks = _employeeTasks.where((task) {
-      final startDate = DateTime.parse(task['gBaslaTarih']);
-      final endDate = DateTime.parse(task['gBitisTarih']);
+      final startDate = DateTime.parse(task['gBaslaTarih']).toLocal();
+      final endDate = DateTime.parse(task['gBitisTarih']).toLocal();
+      final taskStartDate = DateTime(startDate.year, startDate.month, startDate.day);
+      final taskEndDate = DateTime(endDate.year, endDate.month, endDate.day);
+
       return task['gDurum'] != 'Tamamlandı' &&
-          startDate.isBefore(now) &&
-          endDate.isAfter(now);
+          !taskStartDate.isAfter(today) &&
+          !taskEndDate.isBefore(today);
     }).toList();
 
     final upcomingTasks = _employeeTasks.where((task) {
-      final startDate = DateTime.parse(task['gBaslaTarih']);
+      final startDate = DateTime.parse(task['gBaslaTarih']).toLocal();
+      final taskStartDate = DateTime(startDate.year, startDate.month, startDate.day);
+
       return task['gDurum'] != 'Tamamlandı' &&
-          startDate.isAfter(now);
+          taskStartDate.isAfter(today);
     }).toList();
 
     return DefaultTabController(
       length: 3,
       child: Column(
         children: [
-          const TabBar(
+          TabBar(
             tabs: [
-              Tab(text: 'Tamamlanan'),
-              Tab(text: 'Devam Eden'),
-              Tab(text: 'Gelecek'),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Tamamlanan'),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${completedTasks.length}',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.headlineLarge?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Devam Eden'),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${ongoingTasks.length}',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.headlineLarge?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Gelecek'),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${upcomingTasks.length}',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.headlineLarge?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           Expanded(
@@ -126,8 +202,19 @@ class EmployeeProfilePageState extends State<EmployeeProfilePage> {
   }
 
   String _formatDate(String date) {
-    final parsedDate = DateTime.parse(date);
-    return '${parsedDate.day}.${parsedDate.month}.${parsedDate.year}';
+    try {
+      if (date.isEmpty) return 'Belirtilmemiş';
+
+      // UTC'den yerel saat dilimine çevirme
+      DateTime parsedDate = DateTime.parse(date).toLocal();
+      // Saat bilgisini sıfırlayarak sadece tarih bilgisini al
+      parsedDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+
+      return "${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month.toString().padLeft(2, '0')}.${parsedDate.year}";
+    } catch (e) {
+      print('Date parsing error for value $date: $e');
+      return 'Geçersiz Tarih';
+    }
   }
 
   @override

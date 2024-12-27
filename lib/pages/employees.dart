@@ -7,7 +7,10 @@ import 'dart:convert';
 class EmployeesPage extends StatefulWidget {
   final dynamic currentUser;
 
-  const EmployeesPage({Key? key, required this.currentUser}) : super(key: key);
+  const EmployeesPage({
+    Key? key,
+    required this.currentUser,
+  }) : super(key: key);
 
   @override
   _EmployeesPageState createState() => _EmployeesPageState();
@@ -26,7 +29,8 @@ class _EmployeesPageState extends State<EmployeesPage> {
 
   Future<void> _fetchEmployees() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/employees'));
+      final response = await http.get(
+          Uri.parse('http://localhost:3000/employees'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -79,50 +83,53 @@ class _EmployeesPageState extends State<EmployeesPage> {
 
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Çalışan Güncelle'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Ad Soyad',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final response = await http.put(
-                  Uri.parse('http://localhost:3000/employees/${employee.cID}'),
-                  headers: {'Content-Type': 'application/json'},
-                  body: json.encode({'cAdSoyad': nameController.text}),
-                );
+      builder: (context) =>
+          AlertDialog(
+            title: const Text('Çalışan Güncelle'),
+            content: TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Ad Soyad',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('İptal'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  try {
+                    final response = await http.put(
+                      Uri.parse(
+                          'http://localhost:3000/employees/${employee.cID}'),
+                      headers: {'Content-Type': 'application/json'},
+                      body: json.encode({'cAdSoyad': nameController.text}),
+                    );
 
-                if (response.statusCode == 200) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Çalışan güncellendi')),
-                  );
-                  _fetchEmployees(); // Refresh the list
-                } else {
-                  final errorData = json.decode(response.body);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(errorData['details'] ?? 'Bir hata oluştu')),
-                  );
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Hata: $e')),
-                );
-              }
-            },
-            child: const Text('Güncelle'),
+                    if (response.statusCode == 200) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Çalışan güncellendi')),
+                      );
+                      _fetchEmployees(); // Refresh the list
+                    } else {
+                      final errorData = json.decode(response.body);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(
+                            errorData['details'] ?? 'Bir hata oluştu')),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Hata: $e')),
+                    );
+                  }
+                },
+                child: const Text('Güncelle'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -131,57 +138,61 @@ class _EmployeesPageState extends State<EmployeesPage> {
 
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Yeni Çalışan Ekle'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Ad Soyad',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final newEmployee = {
-                  'cAdSoyad': nameController.text,
-                };
+      builder: (context) =>
+          AlertDialog(
+            title: const Text('Yeni Çalışan Ekle'),
+            content: TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Ad Soyad',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('İptal'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  try {
+                    final newEmployee = {
+                      'cAdSoyad': nameController.text,
+                    };
 
-                final response = await http.post(
-                  Uri.parse('http://localhost:3000/employees'),
-                  headers: {'Content-Type': 'application/json'},
-                  body: json.encode(newEmployee),
-                );
+                    final response = await http.post(
+                      Uri.parse('http://localhost:3000/employees'),
+                      headers: {'Content-Type': 'application/json'},
+                      body: json.encode(newEmployee),
+                    );
 
-                if (response.statusCode == 201) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Yeni çalışan başarıyla eklendi')),
-                  );
-                  _fetchEmployees(); // Refresh the list
-                } else {
-                  final errorData = json.decode(response.body);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(errorData['error'] ?? 'Bir hata oluştu')),
-                  );
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Hata: $e')),
-                );
-              }
-            },
-            child: const Text('Ekle'),
+                    if (response.statusCode == 201) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Yeni çalışan başarıyla eklendi')),
+                      );
+                      _fetchEmployees(); // Refresh the list
+                    } else {
+                      final errorData = json.decode(response.body);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(
+                            errorData['error'] ?? 'Bir hata oluştu')),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Hata: $e')),
+                    );
+                  }
+                },
+                child: const Text('Ekle'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -196,105 +207,206 @@ class _EmployeesPageState extends State<EmployeesPage> {
       return const Center(child: Text('Çalışan bulunamadı'));
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ElevatedButton(
-                onPressed: _addEmployee,
-                child: const Text('Yeni Çalışan Ekle'),
-              ),
-              DataTable(
-                columns: const [
-                  DataColumn(
-                    label: Text(
-                      'ID',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+    return Expanded(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery
+                .of(context)
+                .size
+                .width * 0.95,
+          ),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              columnSpacing: 40,
+                              horizontalMargin: 20,
+                              headingRowHeight: 60,
+                              dataRowHeight: 60,
+                              columns: [
+                                DataColumn(
+                                  label: Container(
+                                    width: 100,
+                                    child: Text(
+                                      'ID',
+                                      style: Theme
+                                          .of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Container(
+                                    width: 200,
+                                    child: Text(
+                                      'Ad Soyad',
+                                      style: Theme
+                                          .of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                  ),
+                                ),
+                                DataColumn(
+                                  label: Container(
+                                    width: 150,
+                                    child: Text(
+                                      'İşlemler',
+                                      style: Theme
+                                          .of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              rows: _employees.map((employee) {
+                                return DataRow(
+                                  cells: [
+                                    DataCell(
+                                      Container(
+                                        width: 100,
+                                        child: Text(
+                                          employee.cID.toString(),
+                                          style: Theme
+                                              .of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Container(
+                                        width: 200,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EmployeeProfilePage(
+                                                      employeeId: employee.cID,
+                                                      employeeName: employee
+                                                          .cAdSoyad,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          child: Text(
+                                            employee.cAdSoyad,
+                                            style: TextStyle(
+                                              decoration: TextDecoration
+                                                  .underline,
+                                              color: Colors.blue,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Container(
+                                        width: 150,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.edit,
+                                                color: Colors.blue,
+                                              ),
+                                              onPressed: () =>
+                                                  _updateEmployee(employee),
+                                            ),
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.delete,
+                                                color: Theme
+                                                    .of(context)
+                                                    .colorScheme
+                                                    .error,
+                                              ),
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                        title: const Text(
+                                                            'Çalışan Sil'),
+                                                        content: Text(
+                                                            '${employee
+                                                                .cAdSoyad} silinecek. Emin misiniz?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    context),
+                                                            child: const Text(
+                                                                'İptal'),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                              _deleteEmployee(
+                                                                  employee);
+                                                            },
+                                                            child: const Text(
+                                                                'Sil'),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  DataColumn(
-                    label: Text(
-                      'Ad Soyad',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _addEmployee,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme
+                          .of(context)
+                          .primaryColor,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'İşlemler',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Text(
+                      'Yeni Çalışan Ekle',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
                     ),
                   ),
                 ],
-                rows: _employees.map((employee) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(employee.cID.toString())),
-                      DataCell(
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EmployeeProfilePage(
-                                  employeeId: employee.cID,
-                                  employeeName: employee.cAdSoyad,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            employee.cAdSoyad,
-                            style: const TextStyle(
-                              decoration: TextDecoration.underline,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _updateEmployee(employee),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Çalışan Sil'),
-                                    content: Text('${employee.cAdSoyad} silinecek. Emin misiniz?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text('İptal'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          _deleteEmployee(employee);
-                                        },
-                                        child: const Text('Sil'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
               ),
-            ],
+            ),
           ),
         ),
       ),

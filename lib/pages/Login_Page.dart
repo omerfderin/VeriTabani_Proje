@@ -14,70 +14,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String _selectedLanguage = 'Türkçe';
   bool _isLoginMode = true;
   ThemeMode _currentThemeMode = ThemeMode.system;
 
-  final List<String> _languages = ['Türkçe', 'English'];
   final List<ThemeMode> _themeModes = [ThemeMode.system, ThemeMode.light, ThemeMode.dark];
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
-  Map<String, Map<String, String>> _localizedTexts = {
-    'Türkçe': {
-      'appName': 'Projify',
-      'welcomeText': 'Hoş Geldiniz!',
-      'createAccount': 'Hesap Oluştur',
-      'login': 'Giriş Yap',
-      'register': 'Kayıt Ol',
-      'email': 'E-posta',
-      'password': 'Şifre',
-      'confirmPassword': 'Şifreyi Onayla',
-      'noAccount': 'Hesabınız yok mu? Kayıt Olun',
-      'haveAccount': 'Zaten bir hesabınız var mı? Giriş Yapın',
-      'selectLanguage': 'Dil Seçin',
-      'selectTheme': 'Tema Seçin',
-      'lightTheme': 'Açık Tema',
-      'darkTheme': 'Koyu Tema',
-      'systemTheme': 'Sistem Teması',
-      'emptyFields': 'Lütfen tüm alanları doldurun',
-      'fillAllFields': 'Lütfen tüm alanları doldurun',
-      'passwordMismatch': 'Şifreler eşleşmiyor',
-    },
-    'English': {
-      'appName': 'Projify',
-      'welcomeText': 'Welcome!',
-      'createAccount': 'Create Account',
-      'login': 'Login',
-      'register': 'Register',
-      'email': 'Email',
-      'password': 'Password',
-      'confirmPassword': 'Confirm Password',
-      'noAccount': 'Don\'t have an account? Register',
-      'haveAccount': 'Already have an account? Login',
-      'selectLanguage': 'Select Language',
-      'selectTheme': 'Select Theme',
-      'lightTheme': 'Light Theme',
-      'darkTheme': 'Dark Theme',
-      'systemTheme': 'System Theme',
-      'emptyFields': 'Please fill all fields',
-      'fillAllFields': 'Please fill all fields',
-      'passwordMismatch': 'Passwords do not match',
-    },
-  };
-
-  String _getLocalizedText(String key) {
-    return _localizedTexts[_selectedLanguage]?[key] ?? key;
-  }
-
-  void _selectLanguage(String? language) {
-    if (language != null) {
-      setState(() {
-        _selectedLanguage = language;
-      });
-    }
-  }
 
   void _selectTheme(ThemeMode? themeMode) {
     if (themeMode != null) {
@@ -91,11 +34,11 @@ class _LoginPageState extends State<LoginPage> {
   String _getThemeModeName(ThemeMode themeMode) {
     switch (themeMode) {
       case ThemeMode.system:
-        return _getLocalizedText('systemTheme');
+        return 'Sistem Teması';
       case ThemeMode.light:
-        return _getLocalizedText('lightTheme');
+        return 'Açık Tema';
       case ThemeMode.dark:
-        return _getLocalizedText('darkTheme');
+        return 'Koyu Tema';
     }
   }
 
@@ -119,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_getLocalizedText('emptyFields'))),
+        SnackBar(content: Text('Lütfen tüm alanları doldurun')),
       );
       return;
     }
@@ -148,7 +91,6 @@ class _LoginPageState extends State<LoginPage> {
             builder: (context) => ProjectDetailsPage(
               projects: [],
               currentUser: currentUser,
-              initialLanguage: _selectedLanguage,
               initialThemeMode: _currentThemeMode,
             ),
           ),
@@ -172,14 +114,14 @@ class _LoginPageState extends State<LoginPage> {
 
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_getLocalizedText('fillAllFields'))),
+        SnackBar(content: Text('Lütfen tüm alanları doldurun')),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_getLocalizedText('passwordMismatch'))),
+        SnackBar(content: Text('Şifreler eşleşmiyor')),
       );
       return;
     }
@@ -246,36 +188,25 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           child: Icon(
                             Icons.dashboard,
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).colorScheme.secondaryContainer,
                             size: 24,
                           ),
                         ),
                         SizedBox(width: 16),
                         Text(
-                          _getLocalizedText('appName'),
+                          'Projify',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        _buildHeaderButton(
-                          icon: Icons.dark_mode,
-                          text: _getThemeModeName(_currentThemeMode),
-                          onPressed: () => _showThemeMenu(context),
-                        ),
-                        SizedBox(width: 16),
-                        _buildHeaderButton(
-                          icon: Icons.language,
-                          text: _selectedLanguage,
-                          onPressed: () => _showLanguageMenu(context),
-                        ),
-                      ],
+                    _buildHeaderButton(
+                      icon: Icons.dark_mode,
+                      text: _getThemeModeName(_currentThemeMode),
+                      onPressed: () => _showThemeMenu(context),
                     ),
                   ],
                 ),
                 SizedBox(height: 48),
-
                 Container(
                   constraints: BoxConstraints(maxWidth: 400),
                   decoration: BoxDecoration(
@@ -293,19 +224,19 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     children: [
                       Text(
-                        _isLoginMode ? _getLocalizedText('welcomeText') : _getLocalizedText('createAccount'),
+                        _isLoginMode ? 'Hoş Geldiniz!' : 'Hesap Oluştur',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       SizedBox(height: 32),
                       _buildTextField(
                         controller: _emailController,
-                        label: _getLocalizedText('email'),
+                        label: 'E-posta',
                         icon: Icons.email,
                       ),
                       SizedBox(height: 24),
                       _buildTextField(
                         controller: _passwordController,
-                        label: _getLocalizedText('password'),
+                        label: 'Şifre',
                         icon: Icons.lock,
                         isPassword: true,
                       ),
@@ -313,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(height: 24),
                         _buildTextField(
                           controller: _confirmPasswordController,
-                          label: _getLocalizedText('confirmPassword'),
+                          label: 'Şifreyi Onayla',
                           icon: Icons.lock,
                           isPassword: true,
                         ),
@@ -330,10 +261,10 @@ class _LoginPageState extends State<LoginPage> {
                           minimumSize: Size(double.infinity, 48),
                         ),
                         child: Text(
-                          _isLoginMode ? _getLocalizedText('login') : _getLocalizedText('register'),
+                          _isLoginMode ? 'Giriş Yap' : 'Kayıt Ol',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Theme.of(context).colorScheme.surface,
+                            color: Theme.of(context).textTheme.headlineLarge?.color,
                           ),
                         ),
                       ),
@@ -341,9 +272,9 @@ class _LoginPageState extends State<LoginPage> {
                       TextButton(
                         onPressed: _toggleAuthMode,
                         child: Text(
-                          _isLoginMode ? _getLocalizedText('noAccount') : _getLocalizedText('haveAccount'),
+                          _isLoginMode ? 'Hesabınız yok mu? Kayıt Olun' : 'Zaten bir hesabınız var mı? Giriş Yapın',
                           style: TextStyle(
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.blue,
                             fontSize: 14,
                           ),
                         ),
@@ -434,28 +365,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
             onTap: () {
               _selectTheme(mode);
-              Navigator.pop(context);
-            },
-          )).toList(),
-        ),
-      ),
-    );
-  }
-
-  void _showLanguageMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        color: Theme.of(context).colorScheme.surface,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: _languages.map((language) => ListTile(
-            title: Text(
-              language,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            onTap: () {
-              _selectLanguage(language);
               Navigator.pop(context);
             },
           )).toList(),

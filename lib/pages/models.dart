@@ -16,7 +16,7 @@ class Proje {
   DateTime pBaslaTarih;
   DateTime pBitisTarih;
   int pGecikmeSure;
-  Kullanici kullanici;  // Foreign key olarak Kullanici nesnesi kullanıldı
+  Kullanici kullanici;
 
   Proje({
     required this.pID,

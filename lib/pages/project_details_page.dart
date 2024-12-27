@@ -8,14 +8,12 @@ import 'dart:convert';
 class ProjectDetailsPage extends StatefulWidget {
   final List<Proje> projects;
   final Kullanici currentUser;
-  final String? initialLanguage;
   final ThemeMode? initialThemeMode;
 
   const ProjectDetailsPage({
     Key? key,
     required this.projects,
     required this.currentUser,
-    this.initialLanguage,
     this.initialThemeMode,
   }) : super(key: key);
 
@@ -37,7 +35,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
 
   Future<void> _fetchProjects() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/projects'));
+      final response = await http.get(
+          Uri.parse('http://localhost:3000/projects'));
       if (response.statusCode == 200) {
         final List<dynamic> decodedData = json.decode(response.body);
         setState(() {
@@ -58,68 +57,157 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
 
   Widget _buildDataTable() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(
-        color: Theme.of(context).primaryColor,
-      ));
+      return Expanded(
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+      );
     }
 
     if (_projectsFromApi.isEmpty) {
-      return Center(child: Text(
-        'Proje bulunamadı',
-        style: Theme.of(context).textTheme.bodyMedium,
-      ));
+      return Expanded(
+        child: Center(
+          child: Text(
+            'Proje bulunamadı',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          child: DataTable(
-            columns: [
-              DataColumn(label: Text('Proje Adı',
-                  style: Theme.of(context).textTheme.titleMedium)),
-              DataColumn(label: Text('Başlangıç Tarihi',
-                  style: Theme.of(context).textTheme.titleMedium)),
-              DataColumn(label: Text('Bitiş Tarihi',
-                  style: Theme.of(context).textTheme.titleMedium)),
-            ],
-            rows: _projectsFromApi.map<DataRow>((project) {
-              return DataRow(
-                cells: [
-                  DataCell(
-                    Text(
-                        project['pAd']?.toString() ?? 'Belirtilmemiş',
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          color: Theme.of(context).primaryColor,
-                        )
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProjectTasksPage(
-                            selectedProject: Proje(
-                              kullanici: widget.currentUser,
-                              pID: project['pID'] ?? 0,
-                              pAd: project['pAd'],
-                              pBaslaTarih: DateTime.parse(project['pBaslaTarih']),
-                              pBitisTarih: DateTime.parse(project['pBitisTarih']),
+    return Expanded(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.95,
+          ),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columnSpacing: 40,
+                        horizontalMargin: 20,
+                        headingRowHeight: 60,
+                        columns: [
+                          DataColumn(
+                            label: Container(
+                              width: 150,
+                              child: Text('Proje Adı',
+                                  style: Theme.of(context).textTheme.titleMedium),
                             ),
-                            currentUser: widget.currentUser,
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  DataCell(Text(_formatAPIDate(project['pBaslaTarih']),
-                      style: Theme.of(context).textTheme.bodyMedium)),
-                  DataCell(Text(_formatAPIDate(project['pBitisTarih']),
-                      style: Theme.of(context).textTheme.bodyMedium)),
-                ],
-              );
-            }).toList(),
+                          DataColumn(
+                            label: Container(
+                              width: 150,
+                              child: Text('Başlangıç Tarihi',
+                                  style: Theme.of(context).textTheme.titleMedium),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Container(
+                              width: 150,
+                              child: Text('Bitiş Tarihi',
+                                  style: Theme.of(context).textTheme.titleMedium),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Container(
+                              width: 180,
+                              child: Text('Gecikme Süresi (Gün)',
+                                  style: Theme.of(context).textTheme.titleMedium),
+                            ),
+                          ),
+                        ],
+                        rows: _projectsFromApi.map<DataRow>((project) {
+                          int totalDelay = int.parse(project['totalDelay'].toString());
+                          DateTime originalEndDate = DateTime.parse(project['originalEndDate'] ?? project['pBitisTarih']);
+                          DateTime adjustedEndDate = DateTime.parse(project['pBitisTarih']).add(Duration(days: 1));
+
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Container(
+                                  width: 150,
+                                  child: Text(
+                                    project['pAd']?.toString() ?? 'Belirtilmemiş',
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Colors.blue,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProjectTasksPage(
+                                        selectedProject: Proje(
+                                          kullanici: widget.currentUser,
+                                          pID: project['pID'] ?? 0,
+                                          pAd: project['pAd'],
+                                          pBaslaTarih: DateTime.parse(project['pBaslaTarih']),
+                                          pBitisTarih: adjustedEndDate,
+                                        ),
+                                        currentUser: widget.currentUser,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              DataCell(
+                                Container(
+                                  width: 150,
+                                  child: Text(
+                                    _formatAPIDate(project['pBaslaTarih']),
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Container(
+                                  width: 150,
+                                  child: Tooltip(
+                                    message: 'Orijinal Bitiş Tarihi: ${_formatAPIDate(originalEndDate.toIso8601String())}',
+                                    child: Text(
+                                      _formatAPIDate(adjustedEndDate.toIso8601String()),
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: totalDelay > 0 ? Theme.of(context).colorScheme.error : null,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Container(
+                                  width: 180,
+                                  child: Text(
+                                    totalDelay.toString(),
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: totalDelay > 0 ? Theme.of(context).colorScheme.error : null,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -130,8 +218,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
     if (date == null) return 'Belirtilmemiş';
     try {
       if (date is String) {
-        final DateTime parsedDate = DateTime.parse(date);
-        return '${parsedDate.day.toString().padLeft(2, '0')}.${parsedDate.month.toString().padLeft(2, '0')}.${parsedDate.year}';
+        final DateTime parsedDate = DateTime.parse(date).toLocal();
+        final DateTime localDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        return '${localDate.day.toString().padLeft(2, '0')}.${localDate.month.toString().padLeft(2, '0')}.${localDate.year}';
       }
       return date.toString();
     } catch (e) {
@@ -156,12 +245,12 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
   Widget _buildContent(int index) {
     switch (index) {
       case 0:
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildDataTable(),
-              const SizedBox(height: 16),
-              ElevatedButton(
+        return Column(
+          children: [
+            _buildDataTable(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
                 onPressed: _showAddProjectDialog,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
@@ -170,10 +259,14 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text("Yeni proje ekle"),
+                child: Text("Yeni proje ekle",
+                  style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       case 1:
         return EmployeesPage(currentUser: widget.currentUser);
@@ -181,7 +274,10 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
         return Center(
           child: Text(
             'Ayarlar',
-            style: Theme.of(context).textTheme.bodyLarge,
+            style: Theme
+                .of(context)
+                .textTheme
+                .bodyLarge,
           ),
         );
       default:
@@ -247,11 +343,22 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                   final date = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
+                    firstDate: DateTime.now(),
                     lastDate: DateTime(2100),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: Theme.of(context).colorScheme.copyWith(
+                            primary: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   if (date != null) {
-                    _startDateController.text = date.toIso8601String().split('T')[0];
+                    final selectedDate = DateTime(date.year, date.month, date.day, 0, 0, 0);
+                    _startDateController.text = selectedDate.toIso8601String().split('T')[0];
                   }
                 },
               ),
@@ -278,11 +385,22 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                   final date = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
+                    firstDate: DateTime.now(),
                     lastDate: DateTime(2100),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: Theme.of(context).colorScheme.copyWith(
+                            primary: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   if (date != null) {
-                    _endDateController.text = date.toIso8601String().split('T')[0];
+                    final selectedDate = DateTime(date.year, date.month, date.day, 23, 59, 59);
+                    _endDateController.text = selectedDate.toIso8601String().split('T')[0];
                   }
                 },
               ),
@@ -292,9 +410,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.secondary,
               ),
-              child: const Text("İptal"),
+              child: Text("İptal"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -302,7 +420,10 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                     _startDateController.text.isEmpty ||
                     _endDateController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lütfen tüm alanları doldurun")),
+                    SnackBar(
+                      content: Text("Lütfen tüm alanları doldurun"),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
                   );
                   return;
                 }
@@ -310,11 +431,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
-              child: const Text("Ekle"),
+              child: Text("Ekle"),
             ),
           ],
         );
@@ -340,7 +459,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Proje başarıyla eklendi"),
-              backgroundColor: Theme.of(context).primaryColor,
             ),
           );
           _fetchProjects();
@@ -359,7 +477,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -367,7 +485,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Bağlantı hatası: $e"),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -380,18 +498,27 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
         child: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: Theme
+              .of(context)
+              .colorScheme
+              .surface,
           elevation: 1,
           centerTitle: true,
           title: Text(
             _getPageTitle(),
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme
+                .of(context)
+                .textTheme
+                .titleLarge,
           ),
           leading: IconButton(
             iconSize: 30,
             icon: Icon(
               Icons.menu,
-              color: Theme.of(context).colorScheme.secondary,
+              color: Theme
+                  .of(context)
+                  .colorScheme
+                  .secondary,
             ),
             onPressed: () {
               setState(() {
@@ -408,108 +535,63 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme
+                  .of(context)
+                  .primaryColor
+                  .withOpacity(0.1),
+              Theme
+                  .of(context)
+                  .colorScheme
+                  .secondary
+                  .withOpacity(0.1),
             ],
           ),
         ),
         child: Row(
           children: [
             if (_isSidebarOpen)
-              NavigationSidebar(
+              NavigationRail(
                 selectedIndex: _selectedIndex,
-                onItemSelected: (index) {
+                onDestinationSelected: (index) {
                   setState(() {
                     _selectedIndex = index;
                     _isSidebarOpen = false;
                   });
                 },
+                labelType: NavigationRailLabelType.all,
+                backgroundColor: Theme
+                    .of(context)
+                    .colorScheme
+                    .surface,
+                selectedIconTheme: IconThemeData(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                ),
+                unselectedIconTheme: IconThemeData(
+                  color: Theme
+                      .of(context)
+                      .colorScheme
+                      .secondary,
+                ),
+                destinations: const [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.work),
+                    label: Text('Projeler'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.people),
+                    label: Text('Çalışanlar'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('Ayarlar'),
+                  ),
+                ],
               ),
             Expanded(
               child: _buildContent(_selectedIndex),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class NavigationSidebar extends StatelessWidget {
-  final int selectedIndex;
-  final Function(int) onItemSelected;
-
-  const NavigationSidebar({
-    Key? key,
-    required this.selectedIndex,
-    required this.onItemSelected,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 225,
-      color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: [
-          ListTile(
-            selected: selectedIndex == 0,
-            selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
-            leading: Icon(
-              Icons.work,
-              color: selectedIndex == 0
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.secondary,
-            ),
-            title: Text(
-              'Projeler',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: selectedIndex == 0
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-            ),
-            onTap: () => onItemSelected(0),
-          ),
-          ListTile(
-            selected: selectedIndex == 1,
-            selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
-            leading: Icon(
-              Icons.people,
-              color: selectedIndex == 1
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.secondary,
-            ),
-            title: Text(
-              'Çalışanlar',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: selectedIndex == 1
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-            ),
-            onTap: () => onItemSelected(1),
-          ),
-          ListTile(
-            selected: selectedIndex == 2,
-            selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
-            leading: Icon(
-              Icons.settings,
-              color: selectedIndex == 2
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.secondary,
-            ),
-            title: Text(
-              'Ayarlar',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: selectedIndex == 2
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-            ),
-            onTap: () => onItemSelected(2),
-          ),
-        ],
       ),
     );
   }

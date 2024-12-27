@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'pages/Login_Page.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(MyApp());
+  initializeDateFormatting('tr_TR', null).then((_) {
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -22,6 +27,15 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('tr', 'TR'),
+      ],
+      locale: const Locale('tr', 'TR'),
       debugShowCheckedModeBanner: false,
       title: "Projify",
       theme: ThemeData(
@@ -48,6 +62,8 @@ class _MyAppState extends State<MyApp> {
           titleLarge: TextStyle(color: Color(0xFF202124), fontWeight: FontWeight.bold),
         ),
         colorScheme: ColorScheme.light(
+          onSecondary: Colors.white60,
+          secondaryContainer: Color(0xFF3A78E0),
           primary: Color(0xFF4285F4),
           secondary: Color(0xFF1A73E8),
           surface: Color(0xFFFFFFFF),
@@ -78,7 +94,8 @@ class _MyAppState extends State<MyApp> {
           titleLarge: TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.bold),
         ),
         colorScheme: ColorScheme.dark(
-          secondaryContainer: Color(0xFF8AB4F8),
+          onSecondary: Colors.grey,
+          secondaryContainer: Color(0xFF303134),
           primary: Color(0xFF8AB4F8),
           secondary: Color(0xFF5F6368),
           surface: Color(0xFF1E1E1E),
