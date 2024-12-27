@@ -112,7 +112,7 @@ class _EmployeesPageState extends State<EmployeesPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Çalışan güncellendi')),
                       );
-                      _fetchEmployees(); // Refresh the list
+                      _fetchEmployees();
                     } else {
                       final errorData = json.decode(response.body);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -171,7 +171,7 @@ class _EmployeesPageState extends State<EmployeesPage> {
                         const SnackBar(
                             content: Text('Yeni çalışan başarıyla eklendi')),
                       );
-                      _fetchEmployees(); // Refresh the list
+                      _fetchEmployees();
                     } else {
                       final errorData = json.decode(response.body);
                       ScaffoldMessenger.of(context).showSnackBar(
